@@ -8,9 +8,16 @@ from keras.layers import Flatten, Dense, Lambda
 from keras.layers.convolutional import Convolution2D
 from keras.layers.convolutional import MaxPooling2D
 from keras.layers.convolutional import Cropping2D
+from keras.callbacks import ModelCheckpoint
 
 
 def get_training_data(csv_file_path):
+    '''
+    Get the saved training data, as well as the generated 'augmented' training
+    data. The generated data is created by flipping all saved images and
+    negating the steering angle. The left and right cameras are used as well
+    with a hand tuned steering_correction
+    '''
     lines = []
     with open(csv_file_path) as csv_file:
         reader = csv.reader(csv_file)
@@ -49,6 +56,9 @@ def get_training_data(csv_file_path):
     return X_train, y_train
 
 def build_model():
+    '''
+    Build up the model and return it.
+    '''
     model = Sequential()
     model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=(160, 320, 3)))
     model.add(Cropping2D(cropping=((70,25), (0,0))))
@@ -80,21 +90,25 @@ def build_model():
     return model
 
 def train(model, X_train, y_train, epochs):
+    '''
+    Perform the training and validation steps.
 
-    for i in range(epochs):
-        print("Training iteration", i)
-        model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=1)
-        model_name = 'model-{}.h5'.format(i)
-        model.save(model_name)
-        print("Saved as {}".format(model_name))
+    model - the compiled keras model
+    X_train - the unnormalized training inputs
+    y_train - the target steering angle for each input
+    epochs - the number of epochs to train for
+    '''
+    filepath="model-{epoch:d}-{val_loss:.2f}.h5"
+    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, mode='min')
+    model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=epochs, callbacks=[checkpoint])
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='SDC Trainer')
-    parser.add_argument('--training_dir', 
+    parser.add_argument('--training_csv', 
                         type=str, 
                         default='/home/jcannon/workspace/sdcnd/sim_training_data/driving_log.csv',
-                        help='path to training data')
+                        help='path to training data csv')
     parser.add_argument('--epochs', 
                         type=int, 
                         default=5, 
@@ -102,9 +116,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    X_train, y_train = get_training_data(args.training_dir)
+    X_train, y_train = get_training_data(args.training_csv)
     print("Training with {} examples".format(len(X_train)))
 
     model = build_model()
+    print(model.summary())
 
     train(model, X_train, y_train, args.epochs)
