@@ -4,7 +4,7 @@ import numpy as np
 import argparse
 
 from keras.models import Sequential
-from keras.layers import Flatten, Dense, Lambda
+from keras.layers import Flatten, Dense, Lambda, Dropout
 from keras.layers.convolutional import Convolution2D
 from keras.layers.convolutional import MaxPooling2D
 from keras.layers.convolutional import Cropping2D
@@ -78,6 +78,8 @@ def build_model():
     # Conv Layer 5
     model.add(Convolution2D(filters=64, kernel_size=3, strides=1, activation='relu'))
 
+    model.add(Dropout(0.5))
+
     # Flatten out and add the fully connected layers
     model.add(Flatten())
     model.add(Dense(100))
@@ -100,7 +102,7 @@ def train(model, X_train, y_train, epochs):
     '''
     filepath="model-{epoch:d}-{val_loss:.2f}.h5"
     checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, mode='min')
-    model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=epochs, callbacks=[checkpoint])
+    model.fit(X_train, y_train, validation_split=0.30, shuffle=True, epochs=epochs, callbacks=[checkpoint])
 
 
 if __name__ == '__main__':
