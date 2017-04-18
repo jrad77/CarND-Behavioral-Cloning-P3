@@ -33,7 +33,7 @@ My project includes the following files:
 * drive.py for driving the car in autonomous mode
 * model.h5 containing a trained convolution neural network 
 * writeup_report.md summarizing the results
-* examples/run_track_1.mp4 and examples/run_track_2.mp4 are videos of the car
+* [examples/run_track_1.mp4] and [examples/run_track_2.mp4] are videos of the car
   making it around both tracks.
 
 #### 2. Submission includes functional code
